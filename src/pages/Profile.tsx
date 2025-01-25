@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Json } from "@/integrations/supabase/types";
 
 interface Profile {
   id: string;
@@ -24,12 +25,14 @@ interface Profile {
   bio: string | null;
   website: string | null;
   phone: string | null;
-  social_links: Record<string, string>;
+  social_links: Json | null;
   background_image: string | null;
   background_color: string | null;
   display_name_preference: string;
-  pinned_content: any[];
-  collections: any[];
+  pinned_content: Json | null;
+  collections: Json | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function Profile() {
