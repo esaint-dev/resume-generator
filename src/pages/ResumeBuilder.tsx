@@ -84,11 +84,11 @@ export default function ResumeBuilder() {
   };
 
   const handleDownload = () => {
-    const blob = new Blob([generatedResume], { type: 'text/plain' });
+    const blob = new Blob([generatedResume], { type: 'application/pdf' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'generated-resume.txt';
+    a.download = 'generated-resume.pdf';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
