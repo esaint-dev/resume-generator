@@ -1,16 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "./ui/navigation-menu";
-import { LogIn, LogOut, UserPlus } from "lucide-react";
+import { LogIn, LogOut, UserPlus, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "./ui/use-toast";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,15 +51,27 @@ export default function Navbar() {
 
       <NavigationMenuList className="space-x-2">
         {user ? (
-          <NavigationMenuItem>
-            <Button
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-[#e59b7d] to-[#452095] hover:opacity-90"
-            >
-              <LogOut className="mr-2" />
-              Logout
-            </Button>
-          </NavigationMenuItem>
+          <>
+            <NavigationMenuItem>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/profile")}
+                className="border-2 border-[#452095] text-[#452095] hover:bg-[#452095] hover:text-white"
+              >
+                <User className="mr-2" />
+                Profile
+              </Button>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Button
+                onClick={handleLogout}
+                className="bg-gradient-to-r from-[#e59b7d] to-[#452095] hover:opacity-90"
+              >
+                <LogOut className="mr-2" />
+                Logout
+              </Button>
+            </NavigationMenuItem>
+          </>
         ) : (
           <>
             <NavigationMenuItem>

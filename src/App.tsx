@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import Profile from "./pages/Profile";
 import Navbar from "./components/Navbar";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
@@ -52,6 +53,10 @@ const App = () => {
             <Route
               path="/auth/signup"
               element={user ? <Navigate to="/" /> : <Signup />}
+            />
+            <Route
+              path="/profile"
+              element={user ? <Profile /> : <Navigate to="/auth/login" />}
             />
           </Routes>
         </BrowserRouter>

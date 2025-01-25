@@ -12,27 +12,54 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          background_color: string | null
+          background_image: string | null
+          bio: string | null
+          collections: Json | null
           created_at: string
+          display_name_preference: string | null
           full_name: string | null
           id: string
+          phone: string | null
+          pinned_content: Json | null
+          social_links: Json | null
           updated_at: string
           username: string | null
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
+          background_color?: string | null
+          background_image?: string | null
+          bio?: string | null
+          collections?: Json | null
           created_at?: string
+          display_name_preference?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
+          pinned_content?: Json | null
+          social_links?: Json | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
+          background_color?: string | null
+          background_image?: string | null
+          bio?: string | null
+          collections?: Json | null
           created_at?: string
+          display_name_preference?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          pinned_content?: Json | null
+          social_links?: Json | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Relationships: []
       }
