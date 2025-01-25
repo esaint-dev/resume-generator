@@ -26,7 +26,14 @@ export default function ResumeBuilder() {
         body: { jobDescription },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to generate resume');
+      }
+
+      if (!data?.resume) {
+        throw new Error('No resume generated');
+      }
 
       setGeneratedResume(data.resume);
       toast({
@@ -37,7 +44,7 @@ export default function ResumeBuilder() {
       console.error('Error generating resume:', error);
       toast({
         title: "Error generating resume",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
