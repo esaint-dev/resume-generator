@@ -25,6 +25,18 @@ export default function ResumeBuilder() {
 
     setIsLoading(true);
     try {
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to generate resumes.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-resume', {
         body: { jobDescription },
       });
@@ -38,14 +50,16 @@ export default function ResumeBuilder() {
         throw new Error('No resume generated');
       }
 
-      setGeneratedResume(data.resume);
+      const resumeContent = String(data.resume); // Ensure resume content is a string
+      setGeneratedResume(resumeContent);
 
-      // Save to database
+      // Save to database with user_id
       const { error: saveError } = await supabase
         .from('generated_resumes')
         .insert({
           job_description: jobDescription,
-          resume_content: data.resume,
+          resume_content: resumeContent,
+          user_id: user.id
         });
 
       if (saveError) {
