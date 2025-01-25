@@ -57,9 +57,28 @@ export default function Profile() {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+
+      if (!data) {
+        // Create a new profile if none exists
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            { 
+              id: user.id,
+              display_name_preference: 'full_name',
+              background_color: '#452095'
+            }
+          ])
+          .select()
+          .maybeSingle();
+
+        if (insertError) throw insertError;
+        data = newProfile;
+      }
+
       setProfile(data);
     } catch (error) {
       toast({
