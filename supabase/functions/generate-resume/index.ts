@@ -17,6 +17,10 @@ serve(async (req) => {
   try {
     const { jobDescription } = await req.json();
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
     const systemPrompt = `You are an expert resume writer. Generate a professional resume based on the provided job description. 
     Format the resume with the following sections:
     1. Professional Summary
@@ -38,10 +42,24 @@ serve(async (req) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Generate a resume for this job description: ${jobDescription}` }
         ],
+        temperature: 0.7,
+        max_tokens: 1500,
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to generate resume: ' + JSON.stringify(error));
+    }
+
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Unexpected OpenAI API response:', data);
+      throw new Error('Invalid response from OpenAI API');
+    }
+
     const generatedResume = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ resume: generatedResume }), {
