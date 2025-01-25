@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Profile from "./pages/Profile";
+import ResumeBuilder from "./pages/ResumeBuilder";
 import Navbar from "./components/Navbar";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
@@ -57,6 +58,10 @@ const App = () => {
             <Route
               path="/profile"
               element={user ? <Profile /> : <Navigate to="/auth/login" />}
+            />
+            <Route
+              path="/resume-builder"
+              element={user ? <ResumeBuilder /> : <Navigate to="/auth/login" />}
             />
           </Routes>
         </BrowserRouter>

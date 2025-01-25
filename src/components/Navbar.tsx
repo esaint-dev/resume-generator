@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "./ui/navigation-menu";
-import { LogIn, LogOut, UserPlus, User } from "lucide-react";
+import { LogIn, LogOut, UserPlus, User, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -52,6 +52,16 @@ export default function Navbar() {
       <NavigationMenuList className="space-x-2">
         {user ? (
           <>
+            <NavigationMenuItem>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/resume-builder")}
+                className="border-2 border-[#452095] text-[#452095] hover:bg-[#452095] hover:text-white"
+              >
+                <FileText className="mr-2" />
+                Resume Builder
+              </Button>
+            </NavigationMenuItem>
             <NavigationMenuItem>
               <Button
                 variant="outline"
