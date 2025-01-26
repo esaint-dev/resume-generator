@@ -9,16 +9,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { jobDescription } = await req.json();
+    const { jobDescription, userProfile } = await req.json();
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
+
+    console.log('Generating resume for job description:', jobDescription);
+    console.log('User profile:', userProfile);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -27,7 +31,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini', // Updated to use the recommended model
         messages: [
           {
             role: 'system',
@@ -71,9 +75,18 @@ serve(async (req) => {
             [Degree/Certification] | [Date Range]
             - [Relevant coursework or achievements]
 
-            Make it relevant to the job description while keeping it professional and impactful.`
+            Make it relevant to the job description while keeping it professional and impactful.
+            Use the provided user profile information where applicable.`
           },
-          { role: 'user', content: `Generate a resume for this job description: ${jobDescription}` }
+          { 
+            role: 'user', 
+            content: `Generate a resume for this job description: ${jobDescription}
+            Using this user information:
+            Full Name: ${userProfile?.full_name || 'Not provided'}
+            Phone: ${userProfile?.phone || 'Not provided'}
+            Website: ${userProfile?.website || 'Not provided'}
+            Bio: ${userProfile?.bio || 'Not provided'}`
+          }
         ],
         temperature: 0.7,
         max_tokens: 1500,
@@ -94,6 +107,7 @@ serve(async (req) => {
     }
 
     const generatedResume = data.choices[0].message.content;
+    console.log('Successfully generated resume');
 
     return new Response(JSON.stringify({ resume: generatedResume }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
