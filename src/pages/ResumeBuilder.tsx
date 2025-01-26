@@ -25,7 +25,6 @@ export default function ResumeBuilder() {
 
     setIsLoading(true);
     try {
-      // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -50,10 +49,9 @@ export default function ResumeBuilder() {
         throw new Error('No resume generated');
       }
 
-      const resumeContent = String(data.resume); // Ensure resume content is a string
+      const resumeContent = String(data.resume);
       setGeneratedResume(resumeContent);
 
-      // Save to database with user_id
       const { error: saveError } = await supabase
         .from('generated_resumes')
         .insert({
@@ -84,11 +82,60 @@ export default function ResumeBuilder() {
   };
 
   const handleDownload = () => {
-    const blob = new Blob([generatedResume], { type: 'application/pdf' });
+    // Create resume content with proper styling
+    const styledResume = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #1A1F2C;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+          }
+          h1, h2, h3 {
+            color: #7E69AB;
+            margin-bottom: 16px;
+          }
+          h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #9b87f5;
+            padding-bottom: 8px;
+          }
+          h2 {
+            font-size: 20px;
+            margin-top: 24px;
+          }
+          .section {
+            margin-bottom: 24px;
+          }
+          ul {
+            margin: 0;
+            padding-left: 20px;
+          }
+          li {
+            margin-bottom: 8px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 32px;
+          }
+        </style>
+      </head>
+      <body>
+        ${generatedResume.replace(/\n/g, '<br>')}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([styledResume], { type: 'text/html' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'generated-resume.pdf';
+    a.download = 'generated-resume.html';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -156,7 +203,7 @@ export default function ResumeBuilder() {
                 Download Resume
               </Button>
             </div>
-            <div className="p-6 rounded-lg bg-gray-50 dark:bg-gray-900 whitespace-pre-wrap font-serif leading-relaxed">
+            <div className="p-6 rounded-lg bg-white dark:bg-gray-900 whitespace-pre-wrap font-serif leading-relaxed text-[#1A1F2C] dark:text-white">
               {generatedResume}
             </div>
           </CardContent>
