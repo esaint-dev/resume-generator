@@ -11,123 +11,155 @@ import html2pdf from 'html2pdf.js';
 
 const RESUME_TEMPLATES = {
   modern: {
-    name: "Modern",
+    name: "Modern Split",
     style: `
       body {
         font-family: 'Arial', sans-serif;
         line-height: 1.6;
-        color: #1A1F2C;
-        max-width: 800px;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .resume-container {
+        display: flex;
+        max-width: 210mm;
         margin: 0 auto;
+        min-height: 297mm;
+      }
+      .sidebar {
+        background: #1A1F2C;
+        color: white;
+        padding: 40px 20px;
+        width: 30%;
+      }
+      .main-content {
         padding: 40px;
-        background: white;
-      }
-      h1, h2, h3 {
-        color: #7E69AB;
-        margin-bottom: 16px;
-      }
-      h1 {
-        font-size: 24px;
-        border-bottom: 2px solid #9b87f5;
-        padding-bottom: 8px;
-      }
-      h2 {
-        font-size: 20px;
-        margin-top: 24px;
+        width: 70%;
       }
       .section {
-        margin-bottom: 24px;
+        margin-bottom: 25px;
       }
-      ul {
+      .section-title {
+        text-transform: uppercase;
+        font-weight: bold;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+      .sidebar .section-title {
+        color: white;
+        border-bottom: 2px solid #FFD700;
+        padding-bottom: 5px;
+      }
+      .main-content .section-title {
+        color: #1A1F2C;
+        border-bottom: 2px solid #4A90E2;
+        padding-bottom: 5px;
+      }
+      .contact-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .skills-list {
+        list-style: none;
+        padding: 0;
         margin: 0;
-        padding-left: 20px;
       }
-      li {
+      .skills-list li {
         margin-bottom: 8px;
       }
-      .header {
-        text-align: center;
-        margin-bottom: 32px;
-      }
-    `,
-  },
-  professional: {
-    name: "Professional",
-    style: `
-      body {
-        font-family: 'Times New Roman', serif;
-        line-height: 1.5;
-        color: #000;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px;
-        background: white;
-      }
-      h1, h2, h3 {
-        color: #2c3e50;
-        margin-bottom: 12px;
-      }
-      h1 {
-        font-size: 28px;
-        text-align: center;
-        text-transform: uppercase;
-      }
-      h2 {
-        font-size: 22px;
-        border-bottom: 1px solid #2c3e50;
-        padding-bottom: 4px;
-      }
-      .section {
+      .work-item {
         margin-bottom: 20px;
       }
-      ul {
-        margin: 8px 0;
-        padding-left: 20px;
+      .work-title {
+        font-weight: bold;
+        margin-bottom: 5px;
       }
-      li {
-        margin-bottom: 6px;
+      .work-date {
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 8px;
       }
-    `,
-  },
-  minimal: {
-    name: "Minimal",
-    style: `
-      body {
-        font-family: 'Helvetica', sans-serif;
-        line-height: 1.4;
-        color: #333;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px;
-        background: white;
+      .education-item {
+        margin-bottom: 15px;
       }
-      h1, h2, h3 {
-        color: #333;
+      .name-title {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .name-title h1 {
+        font-size: 28px;
+        margin: 0;
+        margin-bottom: 5px;
+      }
+      .name-title .job-title {
+        font-size: 18px;
+        color: #FFD700;
+      }
+      .achievements-list {
+        list-style: none;
+        padding: 0;
+      }
+      .achievements-list li {
         margin-bottom: 10px;
       }
-      h1 {
-        font-size: 26px;
-        font-weight: 300;
-        text-align: center;
-      }
-      h2 {
-        font-size: 18px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      .section {
-        margin-bottom: 18px;
-      }
-      ul {
-        margin: 6px 0;
-        padding-left: 18px;
-      }
-      li {
-        margin-bottom: 4px;
-      }
     `,
-  },
+    template: (content: string) => {
+      const sections = content.split('\n\n');
+      const name = sections[0]?.split('\n')[0] || 'Name';
+      const title = sections[0]?.split('\n')[1] || 'Job Title';
+      
+      return `
+        <div class="resume-container">
+          <div class="sidebar">
+            <div class="name-title">
+              <h1>${name}</h1>
+              <div class="job-title">${title}</div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Contact</div>
+              <div class="contact-info">
+                <!-- Contact details will be filled by the AI -->
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Skills</div>
+              <ul class="skills-list">
+                <!-- Skills will be filled by the AI -->
+              </ul>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Achievements</div>
+              <ul class="achievements-list">
+                <!-- Achievements will be filled by the AI -->
+              </ul>
+            </div>
+          </div>
+          
+          <div class="main-content">
+            <div class="section">
+              <div class="section-title">Profile</div>
+              <!-- Profile content will be filled by the AI -->
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Work Experience</div>
+              <!-- Work experience will be filled by the AI -->
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Education</div>
+              <!-- Education will be filled by the AI -->
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
 };
 
 export default function ResumeBuilder() {
@@ -205,51 +237,55 @@ export default function ResumeBuilder() {
     }
   };
 
-  const handleDownload = async () => {
-    const template = RESUME_TEMPLATES[selectedTemplate as keyof typeof RESUME_TEMPLATES];
-    const styledResume = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          ${template.style}
-        </style>
-      </head>
-      <body>
-        ${generatedResume.replace(/\n/g, '<br>')}
-      </body>
-      </html>
-    `;
+const handleDownload = async () => {
+  const template = RESUME_TEMPLATES[selectedTemplate as keyof typeof RESUME_TEMPLATES];
+  
+  // Process the resume content to fit the template
+  const processedContent = template.template(generatedResume);
+  
+  const styledResume = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        ${template.style}
+      </style>
+    </head>
+    <body>
+      ${processedContent}
+    </body>
+    </html>
+  `;
 
-    const element = document.createElement('div');
-    element.innerHTML = styledResume;
-    document.body.appendChild(element);
+  const element = document.createElement('div');
+  element.innerHTML = styledResume;
+  document.body.appendChild(element);
 
-    const options = {
-      margin: 10,
-      filename: 'generated-resume.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    try {
-      await html2pdf().from(element).set(options).save();
-      toast({
-        title: "Resume downloaded!",
-        description: "Your resume has been downloaded as a PDF.",
-      });
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast({
-        title: "Error downloading resume",
-        description: "Failed to generate PDF. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      document.body.removeChild(element);
-    }
+  const options = {
+    margin: 0,
+    filename: 'generated-resume.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
+
+  try {
+    await html2pdf().from(element).set(options).save();
+    toast({
+      title: "Resume downloaded!",
+      description: "Your resume has been downloaded as a PDF.",
+    });
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast({
+      title: "Error downloading resume",
+      description: "Failed to generate PDF. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    document.body.removeChild(element);
+  }
+};
 
   return (
     <div className="container max-w-4xl py-8 space-y-8">
@@ -333,3 +369,4 @@ export default function ResumeBuilder() {
     </div>
   );
 }
+
