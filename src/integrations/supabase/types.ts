@@ -41,6 +41,7 @@ export type Database = {
           bio: string | null
           collections: Json | null
           created_at: string
+          date_of_birth: string | null
           display_name_preference: string | null
           full_name: string | null
           id: string
@@ -58,6 +59,7 @@ export type Database = {
           bio?: string | null
           collections?: Json | null
           created_at?: string
+          date_of_birth?: string | null
           display_name_preference?: string | null
           full_name?: string | null
           id: string
@@ -75,6 +77,7 @@ export type Database = {
           bio?: string | null
           collections?: Json | null
           created_at?: string
+          date_of_birth?: string | null
           display_name_preference?: string | null
           full_name?: string | null
           id?: string

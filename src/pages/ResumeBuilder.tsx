@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Download, History } from "lucide-react";
+import { Loader2, Download, History, UserCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import html2pdf from 'html2pdf.js';
+import type { Profile } from "@/types/profile";
 
 const RESUME_TEMPLATES = {
   modern: {
@@ -167,8 +168,58 @@ export default function ResumeBuilder() {
   const [generatedResume, setGeneratedResume] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(profile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast({
+        title: "Error fetching profile",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  const checkRequiredFields = () => {
+    if (!userProfile) return false;
+
+    const missingFields = [];
+    if (!userProfile.full_name) missingFields.push("full name");
+    if (!userProfile.phone) missingFields.push("phone number");
+    if (!userProfile.date_of_birth) missingFields.push("date of birth");
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Profile incomplete",
+        description: `Please update your ${missingFields.join(", ")} in your profile before generating a resume.`,
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleGenerateResume = async () => {
     if (!jobDescription.trim()) {
@@ -176,6 +227,11 @@ export default function ResumeBuilder() {
         title: "Please enter a job description",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!checkRequiredFields()) {
+      navigate("/profile");
       return;
     }
 
@@ -193,7 +249,10 @@ export default function ResumeBuilder() {
       }
 
       const { data, error } = await supabase.functions.invoke('generate-resume', {
-        body: { jobDescription },
+        body: { 
+          jobDescription,
+          userProfile // Pass the user profile to the edge function
+        },
       });
 
       if (error) {
@@ -237,55 +296,63 @@ export default function ResumeBuilder() {
     }
   };
 
-const handleDownload = async () => {
-  const template = RESUME_TEMPLATES[selectedTemplate as keyof typeof RESUME_TEMPLATES];
-  
-  // Process the resume content to fit the template
-  const processedContent = template.template(generatedResume);
-  
-  const styledResume = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        ${template.style}
-      </style>
-    </head>
-    <body>
-      ${processedContent}
-    </body>
-    </html>
-  `;
+  const handleDownload = async () => {
+    const template = RESUME_TEMPLATES[selectedTemplate as keyof typeof RESUME_TEMPLATES];
+    
+    // Process the resume content to fit the template
+    const processedContent = template.template(generatedResume);
+    
+    const styledResume = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          ${template.style}
+        </style>
+      </head>
+      <body>
+        ${processedContent}
+      </body>
+      </html>
+    `;
 
-  const element = document.createElement('div');
-  element.innerHTML = styledResume;
-  document.body.appendChild(element);
+    const element = document.createElement('div');
+    element.innerHTML = styledResume;
+    document.body.appendChild(element);
 
-  const options = {
-    margin: 0,
-    filename: 'generated-resume.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    const options = {
+      margin: 0,
+      filename: 'generated-resume.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().from(element).set(options).save();
+      toast({
+        title: "Resume downloaded!",
+        description: "Your resume has been downloaded as a PDF.",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error downloading resume",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      document.body.removeChild(element);
+    }
   };
 
-  try {
-    await html2pdf().from(element).set(options).save();
-    toast({
-      title: "Resume downloaded!",
-      description: "Your resume has been downloaded as a PDF.",
-    });
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    toast({
-      title: "Error downloading resume",
-      description: "Failed to generate PDF. Please try again.",
-      variant: "destructive",
-    });
-  } finally {
-    document.body.removeChild(element);
+  if (isLoadingProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
-};
 
   return (
     <div className="container max-w-4xl py-8 space-y-8">
@@ -296,14 +363,24 @@ const handleDownload = async () => {
             Enter the job description you're applying for, and we'll generate a tailored resume for you.
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/my-resumes")}
-          className="flex items-center gap-2"
-        >
-          <History className="w-4 h-4" />
-          View Past Resumes
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/profile")}
+            className="flex items-center gap-2"
+          >
+            <UserCircle className="w-4 h-4" />
+            Update Profile
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/my-resumes")}
+            className="flex items-center gap-2"
+          >
+            <History className="w-4 h-4" />
+            View Past Resumes
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -335,21 +412,6 @@ const handleDownload = async () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-semibold">Generated Resume</h2>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-                <Select
-                  value={selectedTemplate}
-                  onValueChange={setSelectedTemplate}
-                >
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(RESUME_TEMPLATES).map(([key, template]) => (
-                      <SelectItem key={key} value={key}>
-                        {template.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <Button
                   onClick={handleDownload}
                   variant="outline"
@@ -369,4 +431,3 @@ const handleDownload = async () => {
     </div>
   );
 }
-
