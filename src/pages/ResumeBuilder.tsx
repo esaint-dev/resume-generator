@@ -6,11 +6,135 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Download, History } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import html2pdf from 'html2pdf.js';
+
+const RESUME_TEMPLATES = {
+  modern: {
+    name: "Modern",
+    style: `
+      body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        color: #1A1F2C;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        background: white;
+      }
+      h1, h2, h3 {
+        color: #7E69AB;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: 24px;
+        border-bottom: 2px solid #9b87f5;
+        padding-bottom: 8px;
+      }
+      h2 {
+        font-size: 20px;
+        margin-top: 24px;
+      }
+      .section {
+        margin-bottom: 24px;
+      }
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+    `,
+  },
+  professional: {
+    name: "Professional",
+    style: `
+      body {
+        font-family: 'Times New Roman', serif;
+        line-height: 1.5;
+        color: #000;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        background: white;
+      }
+      h1, h2, h3 {
+        color: #2c3e50;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 28px;
+        text-align: center;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: 22px;
+        border-bottom: 1px solid #2c3e50;
+        padding-bottom: 4px;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      ul {
+        margin: 8px 0;
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 6px;
+      }
+    `,
+  },
+  minimal: {
+    name: "Minimal",
+    style: `
+      body {
+        font-family: 'Helvetica', sans-serif;
+        line-height: 1.4;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        background: white;
+      }
+      h1, h2, h3 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      h1 {
+        font-size: 26px;
+        font-weight: 300;
+        text-align: center;
+      }
+      h2 {
+        font-size: 18px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .section {
+        margin-bottom: 18px;
+      }
+      ul {
+        margin: 6px 0;
+        padding-left: 18px;
+      }
+      li {
+        margin-bottom: 4px;
+      }
+    `,
+  },
+};
 
 export default function ResumeBuilder() {
   const [jobDescription, setJobDescription] = useState("");
   const [generatedResume, setGeneratedResume] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -81,48 +205,14 @@ export default function ResumeBuilder() {
     }
   };
 
-  const handleDownload = () => {
-    // Create resume content with proper styling
+  const handleDownload = async () => {
+    const template = RESUME_TEMPLATES[selectedTemplate as keyof typeof RESUME_TEMPLATES];
     const styledResume = `
       <!DOCTYPE html>
       <html>
       <head>
         <style>
-          body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #1A1F2C;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-          }
-          h1, h2, h3 {
-            color: #7E69AB;
-            margin-bottom: 16px;
-          }
-          h1 {
-            font-size: 24px;
-            border-bottom: 2px solid #9b87f5;
-            padding-bottom: 8px;
-          }
-          h2 {
-            font-size: 20px;
-            margin-top: 24px;
-          }
-          .section {
-            margin-bottom: 24px;
-          }
-          ul {
-            margin: 0;
-            padding-left: 20px;
-          }
-          li {
-            margin-bottom: 8px;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 32px;
-          }
+          ${template.style}
         </style>
       </head>
       <body>
@@ -131,20 +221,34 @@ export default function ResumeBuilder() {
       </html>
     `;
 
-    const blob = new Blob([styledResume], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'generated-resume.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Resume downloaded!",
-      description: "Your resume has been downloaded successfully.",
-    });
+    const element = document.createElement('div');
+    element.innerHTML = styledResume;
+    document.body.appendChild(element);
+
+    const options = {
+      margin: 10,
+      filename: 'generated-resume.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().from(element).set(options).save();
+      toast({
+        title: "Resume downloaded!",
+        description: "Your resume has been downloaded as a PDF.",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error downloading resume",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      document.body.removeChild(element);
+    }
   };
 
   return (
@@ -192,16 +296,33 @@ export default function ResumeBuilder() {
       {generatedResume && (
         <Card className="overflow-hidden">
           <CardContent className="p-6 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-semibold">Generated Resume</h2>
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download Resume
-              </Button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+                <Select
+                  value={selectedTemplate}
+                  onValueChange={setSelectedTemplate}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(RESUME_TEMPLATES).map(([key, template]) => (
+                      <SelectItem key={key} value={key}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleDownload}
+                  variant="outline"
+                  className="w-full sm:w-auto flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download as PDF
+                </Button>
+              </div>
             </div>
             <div className="p-6 rounded-lg bg-white dark:bg-gray-900 whitespace-pre-wrap font-serif leading-relaxed text-[#1A1F2C] dark:text-white">
               {generatedResume}
