@@ -16,4 +16,5 @@ export interface Profile {
   collections: Json | null;
   created_at: string;
   updated_at: string;
+  date_of_birth: string | null;
 }
