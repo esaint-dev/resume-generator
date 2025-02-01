@@ -24,7 +24,7 @@ export default function ProfileTabs({ profile, onProfileUpdate }: ProfileTabsPro
   const [editing, setEditing] = useState(false);
 
   const handleFormSubmit = async (formData: FormData) => {
-    const success = await onProfileUpdate({
+    await onProfileUpdate({
       username: formData.get("username") as string,
       full_name: formData.get("full_name") as string,
       bio: formData.get("bio") as string,
@@ -35,9 +35,7 @@ export default function ProfileTabs({ profile, onProfileUpdate }: ProfileTabsPro
         "display_name_preference"
       ) as string,
     });
-    if (success) {
-      setEditing(false);
-    }
+    setEditing(false);
   };
 
   return (

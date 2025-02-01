@@ -55,7 +55,7 @@ export function useProfile() {
     }
   }
 
-  async function updateProfile(updates: Partial<Profile>) {
+  async function updateProfile(updates: Partial<Profile>): Promise<void> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -72,14 +72,12 @@ export function useProfile() {
       toast({
         title: "Profile updated successfully",
       });
-      return true;
     } catch (error) {
       toast({
         title: "Error updating profile",
         description: error.message,
         variant: "destructive",
       });
-      return false;
     }
   }
 
