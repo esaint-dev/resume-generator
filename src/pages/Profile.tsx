@@ -154,6 +154,7 @@ export default function ProfilePage() {
                       bio: formData.get("bio") as string,
                       website: formData.get("website") as string,
                       phone: formData.get("phone") as string,
+                      date_of_birth: formData.get("date_of_birth") as string,
                       display_name_preference: formData.get(
                         "display_name_preference"
                       ) as string,
