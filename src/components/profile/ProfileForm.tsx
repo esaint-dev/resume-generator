@@ -65,20 +65,31 @@ export default function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="display_name_preference">
-          Display Name Preference
-        </Label>
-        <select
-          id="display_name_preference"
-          name="display_name_preference"
-          defaultValue={profile?.display_name_preference || "full_name"}
-          className="w-full rounded-md border border-input bg-background px-3 py-2"
-        >
-          <option value="full_name">Full Name</option>
-          <option value="first_name">First Name Only</option>
-          <option value="username">Username Only</option>
-        </select>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="date_of_birth">Date of Birth</Label>
+          <Input
+            id="date_of_birth"
+            name="date_of_birth"
+            type="date"
+            defaultValue={profile?.date_of_birth || ""}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="display_name_preference">
+            Display Name Preference
+          </Label>
+          <select
+            id="display_name_preference"
+            name="display_name_preference"
+            defaultValue={profile?.display_name_preference || "full_name"}
+            className="w-full rounded-md border border-input bg-background px-3 py-2"
+          >
+            <option value="full_name">Full Name</option>
+            <option value="first_name">First Name Only</option>
+            <option value="username">Username Only</option>
+          </select>
+        </div>
       </div>
 
       <Button type="submit" className="w-full">

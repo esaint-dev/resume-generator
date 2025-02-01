@@ -1,4 +1,4 @@
-import { LinkIcon } from "lucide-react";
+import { LinkIcon, Calendar } from "lucide-react";
 import type { Profile } from "@/types/profile";
 
 interface ProfileViewProps {
@@ -45,6 +45,14 @@ export default function ProfileView({ profile }: ProfileViewProps) {
             <LinkIcon className="h-4 w-4" />
             <span className="text-sm text-muted-foreground">
               {profile.phone}
+            </span>
+          </div>
+        )}
+        {profile?.date_of_birth && (
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4" />
+            <span className="text-sm text-muted-foreground">
+              {new Date(profile.date_of_birth).toLocaleDateString()}
             </span>
           </div>
         )}
