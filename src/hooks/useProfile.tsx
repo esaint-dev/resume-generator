@@ -27,15 +27,22 @@ export function useProfile() {
       if (error) throw error;
 
       if (!data) {
+        // Get user metadata from auth
+        const userMetadata = user.user_metadata;
+        
+        // Create initial profile with Google data if available
+        const initialProfile = {
+          id: user.id,
+          display_name_preference: 'full_name',
+          background_color: '#452095',
+          full_name: userMetadata?.full_name || null,
+          avatar_url: userMetadata?.avatar_url || null,
+          email: user.email || null
+        };
+
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
-          .insert([
-            { 
-              id: user.id,
-              display_name_preference: 'full_name',
-              background_color: '#452095'
-            }
-          ])
+          .insert([initialProfile])
           .select()
           .maybeSingle();
 
