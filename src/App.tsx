@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,13 +31,14 @@ const App = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   if (loading) {
-    return null;
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
@@ -47,14 +49,17 @@ const App = () => {
         <BrowserRouter>
           <Navbar />
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route
+              path="/"
+              element={user ? <Navigate to="/resume-builder" /> : <Index />}
+            />
             <Route
               path="/auth/login"
-              element={user ? <Navigate to="/" /> : <Login />}
+              element={user ? <Navigate to="/resume-builder" /> : <Login />}
             />
             <Route
               path="/auth/signup"
-              element={user ? <Navigate to="/" /> : <Signup />}
+              element={user ? <Navigate to="/resume-builder" /> : <Signup />}
             />
             <Route
               path="/profile"
