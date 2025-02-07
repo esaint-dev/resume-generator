@@ -108,9 +108,23 @@ const RESUME_TEMPLATES = {
     `,
     template: (content: string) => {
       const sections = content.split('\n\n');
-      const name = sections[0]?.split('\n')[0] || 'Name';
-      const title = sections[0]?.split('\n')[1] || 'Job Title';
+      let parsedSections: { [key: string]: string[] } = {};
       
+      let currentSection = '';
+      sections.forEach(section => {
+        const lines = section.split('\n');
+        if (lines[0].toUpperCase() === lines[0]) {
+          currentSection = lines[0].trim();
+          parsedSections[currentSection] = lines.slice(1);
+        } else if (currentSection) {
+          parsedSections[currentSection] = parsedSections[currentSection].concat(lines);
+        }
+      });
+
+      const nameAndTitle = sections[0].split('\n');
+      const name = nameAndTitle[0];
+      const title = nameAndTitle[1] || '';
+
       return `
         <div class="resume-container">
           <div class="sidebar">
@@ -119,43 +133,65 @@ const RESUME_TEMPLATES = {
               <div class="job-title">${title}</div>
             </div>
             
-            <div class="section">
-              <div class="section-title">Contact</div>
-              <div class="contact-info">
-                <!-- Contact details will be filled by the AI -->
+            ${parsedSections['CONTACT'] ? `
+              <div class="section">
+                <div class="section-title">Contact</div>
+                <div class="contact-info">
+                  ${parsedSections['CONTACT'].map(line => `
+                    <div class="contact-item">${line.trim()}</div>
+                  `).join('')}
+                </div>
               </div>
-            </div>
+            ` : ''}
             
-            <div class="section">
-              <div class="section-title">Skills</div>
-              <ul class="skills-list">
-                <!-- Skills will be filled by the AI -->
-              </ul>
-            </div>
+            ${parsedSections['SKILLS'] ? `
+              <div class="section">
+                <div class="section-title">Skills</div>
+                <ul class="skills-list">
+                  ${parsedSections['SKILLS'].map(skill => `
+                    <li>${skill.trim()}</li>
+                  `).join('')}
+                </ul>
+              </div>
+            ` : ''}
             
-            <div class="section">
-              <div class="section-title">Achievements</div>
-              <ul class="achievements-list">
-                <!-- Achievements will be filled by the AI -->
-              </ul>
-            </div>
+            ${parsedSections['ACHIEVEMENTS'] ? `
+              <div class="section">
+                <div class="section-title">Achievements</div>
+                <ul class="achievements-list">
+                  ${parsedSections['ACHIEVEMENTS'].map(achievement => `
+                    <li>${achievement.trim()}</li>
+                  `).join('')}
+                </ul>
+              </div>
+            ` : ''}
           </div>
           
           <div class="main-content">
-            <div class="section">
-              <div class="section-title">Profile</div>
-              <!-- Profile content will be filled by the AI -->
-            </div>
+            ${parsedSections['PROFILE'] ? `
+              <div class="section">
+                <div class="section-title">Profile</div>
+                <div>${parsedSections['PROFILE'].join('\n')}</div>
+              </div>
+            ` : ''}
             
-            <div class="section">
-              <div class="section-title">Work Experience</div>
-              <!-- Work experience will be filled by the AI -->
-            </div>
+            ${parsedSections['WORK EXPERIENCE'] ? `
+              <div class="section">
+                <div class="section-title">Work Experience</div>
+                ${parsedSections['WORK EXPERIENCE'].map(exp => `
+                  <div class="work-item">${exp}</div>
+                `).join('')}
+              </div>
+            ` : ''}
             
-            <div class="section">
-              <div class="section-title">Education</div>
-              <!-- Education will be filled by the AI -->
-            </div>
+            ${parsedSections['EDUCATION'] ? `
+              <div class="section">
+                <div class="section-title">Education</div>
+                ${parsedSections['EDUCATION'].map(edu => `
+                  <div class="education-item">${edu}</div>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
