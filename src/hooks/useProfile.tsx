@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,9 +36,17 @@ export function useProfile() {
           id: user.id,
           display_name_preference: 'full_name',
           background_color: '#452095',
-          full_name: userMetadata?.full_name || null,
-          avatar_url: userMetadata?.avatar_url || null,
-          email: user.email || null
+          full_name: userMetadata?.full_name || user.email?.split('@')[0] || null,
+          avatar_url: userMetadata?.avatar_url || userMetadata?.picture || null,
+          username: userMetadata?.username || user.email?.split('@')[0] || null,
+          email: user.email || null,
+          website: userMetadata?.website || null,
+          bio: null,
+          phone: null,
+          social_links: {},
+          background_image: null,
+          pinned_content: [],
+          collections: []
         };
 
         const { data: newProfile, error: insertError } = await supabase
