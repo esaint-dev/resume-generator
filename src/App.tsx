@@ -49,10 +49,7 @@ const App = () => {
         <BrowserRouter>
           <Navbar />
           <Routes>
-            <Route
-              path="/"
-              element={user ? <Navigate to="/resume-builder" /> : <Index />}
-            />
+            <Route path="/" element={<Index />} />
             <Route
               path="/auth/login"
               element={user ? <Navigate to="/resume-builder" /> : <Login />}
